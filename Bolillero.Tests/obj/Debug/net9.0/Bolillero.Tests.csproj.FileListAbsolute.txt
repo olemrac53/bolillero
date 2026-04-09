@@ -1,0 +1,6 @@
+c:\Users\Lab15-PC01\Documents\GitHub\bolillero\Bolillero.Tests\obj\Debug\net9.0\Bolillero.Tests.csproj.AssemblyReference.cache
+c:\Users\Lab15-PC01\Documents\GitHub\bolillero\Bolillero.Tests\obj\Debug\net9.0\Bolillero.Tests.GeneratedMSBuildEditorConfig.editorconfig
+c:\Users\Lab15-PC01\Documents\GitHub\bolillero\Bolillero.Tests\obj\Debug\net9.0\Bolillero.Tests.AssemblyInfoInputs.cache
+c:\Users\Lab15-PC01\Documents\GitHub\bolillero\Bolillero.Tests\obj\Debug\net9.0\Bolillero.Tests.AssemblyInfo.cs
+c:\Users\Lab15-PC01\Documents\GitHub\bolillero\Bolillero.Tests\obj\Debug\net9.0\Bolillero.Tests.csproj.CoreCompileInputs.cache
+c:\Users\Lab15-PC01\Documents\GitHub\bolillero\Bolillero.Tests\obj\Debug\net9.0\Bolillero.Tests.sourcelink.json

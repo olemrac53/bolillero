@@ -1,4 +1,8 @@
-﻿using Xunit;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Xunit;
+using Biblioteca; 
+using Sim;
 
 namespace Bolillero.Tests
 {
@@ -8,9 +12,10 @@ namespace Bolillero.Tests
         public async Task SimularParallelAsync_DeberiaDarCeroConJugadaImposible()
         {
             // Arrange
-            var bolillero = new Bolillero(3); // Bolillas del 0 al 2
-            var simulacion = new Simulacion(bolillero);
-            var jugada = new List<int> { 5, 6, 7 }; // Bolillas que no existen
+            var bolillero = new Biblioteca.Bolillero(3); // Bolillas del 0 al 2
+            
+            var simulacion = new Simulacion(bolillero); 
+            var jugada = new List<int> { 5, 6, 7 }; 
 
             // Act
             var aciertos = await simulacion.SimularParallelAsync(jugada, 1000);
@@ -23,8 +28,8 @@ namespace Bolillero.Tests
         public async Task SimularParallelAsync_DeberiaDarMasDeCeroConJugadaProbable()
         {
             // Arrange
-            var bolillero = new Bolillero(3); // Bolillas: 0, 1, 2
-            var simulacion = new Simulacion(bolillero);
+            var bolillero = new Biblioteca.Bolillero(3); // Bolillas: 0, 1, 2
+            var simulacion = new Simulacion(bolillero); 
             var jugada = new List<int> { 0, 1, 2 };
 
             // Act
