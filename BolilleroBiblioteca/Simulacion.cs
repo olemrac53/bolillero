@@ -1,12 +1,10 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Biblioteca;
+namespace Biblioteca;
 
-namespace Sim;
-
-public class Simulacion(Biblioteca.Bolillero bolillero)
+public class Simulacion
 {
-    private Biblioteca.Bolillero bolillero = bolillero;
+    private Bolillero bolillero;
+
+    public Simulacion(Bolillero bolillero) => this.bolillero = bolillero;
 
     public int JugarNVeces(List<int> jugada, int n)
     {
