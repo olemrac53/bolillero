@@ -26,7 +26,8 @@ public class Simulacion
         {
             Parallel.For(0, cantidadVeces, i =>
             {
-                var bolilleroLocal = new Biblioteca.Bolillero(bolillero.Cantidad); 
+                // Inyectamos AzarRandom para que cada instancia tenga su propio motor de azar
+                var bolilleroLocal = new Biblioteca.Bolillero(bolillero.Cantidad, new AzarRandom()); 
 
                 if (bolilleroLocal.Jugar(jugada))
                 {
