@@ -12,7 +12,7 @@ public class Bolillero
     public Bolillero(int cantidad, IAzar azar)
     {
         _cantidadInicial = cantidad;
-        this.azar = azar; //  Usamos 'this' para asignar el atributo, sino no funciona porque el parámetro se llama igual que el atributo
+        this.azar = azar;
         ReiniciarBolillero();
     }
 
