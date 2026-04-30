@@ -1,35 +1,50 @@
 namespace Biblioteca;
+using System.Collections.Generic; // No te olvides de esto para las List
 
 public class Bolillero
 {
     public int Cantidad { get; private set; }
-    private List<int> bolillasDentro;
-    private List<int> bolillasFuera;
+    private readonly int _cantidadInicial;
+    private List<int> _bolillas = new();
+    private List<int> bolillasFuera = new();
     private IAzar azar;
 
     public Bolillero(int cantidad, IAzar azar)
     {
-        this.Cantidad = cantidad;
-        this.azar = azar;
-        this.bolillasDentro = Enumerable.Range(0, cantidad).ToList();
-        this.bolillasFuera = new List<int>();
+        _cantidadInicial = cantidad;
+        this.azar = azar; // CORRECCIÓN 1: Usamos 'this' para asignar el atributo
+        ReiniciarBolillero();
     }
 
     public int SacarBolilla()
     {
-        int index = azar.ObtenerIndice(bolillasDentro.Count);
-        int valor = bolillasDentro[index];
+        int index = azar.ObtenerIndice(_bolillas.Count);
+        int valor = _bolillas[index];
         
-        bolillasDentro.RemoveAt(index);
-        bolillasFuera.Add(valor);
+        _bolillas.RemoveAt(index);
+        bolillasFuera.Add(valor); // Ahora esto funciona porque bolillasFuera ya está creada
         
         return valor;
     }
 
+    public void ReiniciarBolillero()
+    {
+        _bolillas = new List<int>();
+        bolillasFuera = new List<int>(); // CORRECCIÓN 2: Inicializamos la lista para que no sea null
+
+        for (int i = 0; i < _cantidadInicial; i++)
+        {
+            _bolillas.Add(i);
+        }
+    }
+
     public void ReingresarBolillas()
     {
-        bolillasDentro.AddRange(bolillasFuera);
+        _bolillas.AddRange(bolillasFuera);
         bolillasFuera.Clear();
+        
+        // Agregá esta línea para que los números vuelvan a quedar en orden (0, 1, 2...)
+        _bolillas.Sort();
     }
 
     public bool Jugar(List<int> jugada)
@@ -53,7 +68,9 @@ public class Bolillero
         return aciertos;
     }
 
-    public int CantidadDentro() => bolillasDentro.Count;
+    
+
+    public int CantidadDentro() => _bolillas.Count;
     
     public int CantidadFuera() => bolillasFuera.Count;
 }

@@ -20,6 +20,7 @@ public class Simulacion
             if (bolillero.Jugar(jugada))
             {
                 aciertos++;
+                
             }
         }
         return aciertos;
