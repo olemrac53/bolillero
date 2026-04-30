@@ -19,7 +19,8 @@ public class Simulacion
         return aciertos;
     }
 
-    public long SimularConHilos(List<int> jugada, int cantidadVeces, int cantidadHilos)
+    public async Task<long> SimularConHilosAsync(List<int> jugada, int cantidadVeces, int cantidadHilos)
+    // TODO: PASAR EL ASYNC A LONG EN UN VECTOR, PARA QUE DEVUELVA LA CANTIDAD DE ACERTOS EN CADA HILO, Y LUEGO SUMARLOS
     {
         // 1. Armamos una lista para ir guardando todas las simulaciones, 
         var tareas = new Task<int>[cantidadHilos];
@@ -41,6 +42,8 @@ public class Simulacion
 
     // 3. Usamos await Task.WhenAll para esperar que terminen todas juntas, devolviendo un arreglo de enteros
     int[] resultados = await Task.WhenAll(tareas);
+
+    //TODO: ESTE AWAIT NECESITO QUE FUNCIONE CON EL METODO LONG QUE NO TIENE ASYNC, PARA QUE DEVUELVA UN VECTOR DE LONGS DE FORMA CORRECTA
 
     // 4. Recorremos los resultados y los sumamos
     int totalAciertos = 0;
