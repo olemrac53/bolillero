@@ -12,7 +12,7 @@ public class Bolillero
     public Bolillero(int cantidad, IAzar azar)
     {
         _cantidadInicial = cantidad;
-        this.azar = azar; // CORRECCIÓN 1: Usamos 'this' para asignar el atributo
+        this.azar = azar; //  Usamos 'this' para asignar el atributo, sino no funciona porque el parámetro se llama igual que el atributo
         ReiniciarBolillero();
     }
 
@@ -22,7 +22,7 @@ public class Bolillero
         int valor = _bolillas[index];
         
         _bolillas.RemoveAt(index);
-        bolillasFuera.Add(valor); // Ahora esto funciona porque bolillasFuera ya está creada
+        bolillasFuera.Add(valor); 
         
         return valor;
     }
@@ -30,7 +30,7 @@ public class Bolillero
     public void ReiniciarBolillero()
     {
         _bolillas = new List<int>();
-        bolillasFuera = new List<int>(); // CORRECCIÓN 2: Inicializamos la lista para que no sea null
+        bolillasFuera = new List<int>(); 
 
         for (int i = 0; i < _cantidadInicial; i++)
         {
@@ -43,7 +43,6 @@ public class Bolillero
         _bolillas.AddRange(bolillasFuera);
         bolillasFuera.Clear();
         
-        // Agregá esta línea para que los números vuelvan a quedar en orden (0, 1, 2...)
         _bolillas.Sort();
     }
 

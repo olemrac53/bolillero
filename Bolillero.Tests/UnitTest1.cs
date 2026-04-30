@@ -63,8 +63,6 @@ namespace TestBolilleros
             miBolillero.ReiniciarBolillero();
 
             // Assert: Al volver a jugar, el bolillero debería estar lleno de nuevo.
-            // (La forma exacta de evaluar esto depende de si hiciste una propiedad 'CantidadBolillas', 
-            // pero si jugamos y sacamos el 0, significa que la bolilla 0 volvió al bolillero).
             int bolilla = miBolillero.SacarBolilla();
             Assert.Equal(0, bolilla);
         }
@@ -79,7 +77,7 @@ namespace TestBolilleros
             // Act: Jugamos 5 veces
             long aciertos = miBolillero.JugarNVeces(jugada, 5);
 
-            // Assert: Deberíamos haber acertado las 5 veces
+            // Assert: Deberíamos haber acertado las 5 veces, nota. Con el sort en el bolillero.cs, volveria a la posicion original
             Assert.Equal(5, aciertos);
         }
     }

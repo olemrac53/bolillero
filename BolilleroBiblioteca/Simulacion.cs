@@ -20,17 +20,15 @@ public class Simulacion
             if (bolillero.Jugar(jugada))
             {
                 aciertos++;
-                
+
             }
         }
         return aciertos;
     }
 
-    // Le cambiamos el nombre para sacar el "Parallel" y usar la terminología de clase
     public async Task<int> SimularAsincronico(List<int> jugada, int cantidadVeces)
     {
         // 1. Armamos una lista para ir guardando todas las simulaciones, 
-        // similar a como guardaban hpTask, kodakTask, etc.
         List<Task<int>> tareas = new List<Task<int>>();
 
         for (int i = 0; i < cantidadVeces; i++)
@@ -38,7 +36,6 @@ public class Simulacion
             // 2. Envolvemos la simulación en un Task y la agregamos a la lista
             tareas.Add(Task.Run(() =>
             {
-                // Cada tarea necesita su propio bolillero para no mezclar sus bolillas con las de otra tarea
                 var bolilleroLocal = new Bolillero(bolillero.Cantidad, new AzarRandom()); 
 
                 if (bolilleroLocal.Jugar(jugada))
