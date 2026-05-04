@@ -2,55 +2,58 @@ namespace Biblioteca;
 
 public class Simulacion
 {
-    private Bolillero bolillero;
+    private Bolillero _bolillero;
 
-    public Simulacion(Bolillero bolillero) => this.bolillero = bolillero;
+    public Simulacion(Bolillero bolillero) => _bolillero = bolillero;
 
-    public int JugarNVeces(List<int> jugada, int cantidadVeces)
+    // Simula jugando n veces de forma secuencial, sin hilos
+    public long SimularSinHilos(List<int> jugada, int cantidadVeces)
     {
-        int aciertos = 0;
+        long aciertos = 0;
         for (int i = 0; i < cantidadVeces; i++)
         {
-            if (bolillero.Jugar(jugada))
-            {
+            // Cada iteración trabaja con un clon independiente para no contaminar el estado
+            var clon = (Bolillero)_bolillero.Clone();
+            if (clon.Jugar(jugada))
                 aciertos++;
-            }
         }
         return aciertos;
     }
 
-    public async Task<long> SimularConHilosAsync(List<int> jugada, int cantidadVeces, int cantidadHilos)
-    // TODO: PASAR EL ASYNC A LONG EN UN VECTOR, PARA QUE DEVUELVA LA CANTIDAD DE ACERTOS EN CADA HILO, Y LUEGO SUMARLOS
+    // Simula jugando n veces repartiendo el trabajo en varios hilos
+    public long SimularConHilos(List<int> jugada, int cantidadVeces, int cantidadHilos)
     {
-        // 1. Armamos una lista para ir guardando todas las simulaciones, 
-        var tareas = new Task<int>[cantidadHilos];
+        // Dividimos la carga entre los hilos disponibles
+        int jugadasPorHilo = cantidadVeces / cantidadHilos;
+        int resto = cantidadVeces % cantidadHilos;
 
-        for (int i = 0; i < cantidadVeces; i++)
+        var tareas = new Task<long>[cantidadHilos];
+
+        for (int i = 0; i < cantidadHilos; i++)
         {
-            // 2. Envolvemos la simulación en un Task y la agregamos a la lista
+            // El último hilo absorbe el resto si la división no es exacta
+            int jugadasDeEsteHilo = jugadasPorHilo + (i == cantidadHilos - 1 ? resto : 0);
+
             tareas[i] = Task.Run(() =>
             {
-                var clon = new Bolillero(bolillero.Cantidad, new AzarRandom());
-
-                if (clon.Jugar(jugada))
+                long aciertosLocales = 0;
+                for (int j = 0; j < jugadasDeEsteHilo; j++)
                 {
-                    return 1; // Si gana, esta tarea devuelve 1 acierto
+                    // Cada hilo trabaja con su propio clon, sin concurrencia sobre el bolillero
+                    var clon = (Bolillero)_bolillero.Clone();
+                    if (clon.Jugar(jugada))
+                        aciertosLocales++;
                 }
-                return 0; // Si pierde, devuelve 0
+                return aciertosLocales;
             });
-    }
-
-    // 3. Usamos await Task.WhenAll para esperar que terminen todas juntas, devolviendo un arreglo de enteros
-    int[] resultados = await Task.WhenAll(tareas);
-
-    //TODO: ESTE AWAIT NECESITO QUE FUNCIONE CON EL METODO LONG QUE NO TIENE ASYNC, PARA QUE DEVUELVA UN VECTOR DE LONGS DE FORMA CORRECTA
-
-    // 4. Recorremos los resultados y los sumamos
-    int totalAciertos = 0;
-        foreach (int resultado in resultados)
-        {
-            totalAciertos += resultado;
         }
+
+        // Esperamos que todos los hilos terminen y sumamos los resultados
+        Task.WaitAll(tareas);
+
+        long totalAciertos = 0;
+        foreach (var tarea in tareas)
+            totalAciertos += tarea.Result;
 
         return totalAciertos;
     }

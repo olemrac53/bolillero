@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Biblioteca;
-
-
 namespace Biblioteca;
 
 public interface IAzar
@@ -14,13 +7,13 @@ public interface IAzar
 
 public class AzarRandom : IAzar
 {
-    private Random random = new Random();
-    public int ObtenerIndice(int max) => random.Next(max);
+    private Random _random = new Random();
+    public int ObtenerIndice(int max) => _random.Next(max);
 }
 
 public class AzarFijo : IAzar
 {
-    private int indiceFijo;
-    public AzarFijo(int indice) => this.indiceFijo = indice;
-    public int ObtenerIndice(int max) => indiceFijo;
+    private int _indiceFijo;
+    public AzarFijo(int indice) => _indiceFijo = indice;
+    public int ObtenerIndice(int max) => _indiceFijo;
 }

@@ -4,81 +4,107 @@ using Xunit;
 
 namespace TestBolilleros
 {
-    public class UnitTest1 
+    public class UnitTest1
     {
-
+        // ─── TP1: Tests del Bolillero ───────────────────────────────────────────────
 
         [Fact]
-        public void Prueba_SacarBolilla_AzarFijo()
+        public void SacarBolilla_DevuelveBolillaCero_YActualizaCantidades()
         {
-            // Verificamos que sacar una bolilla funcione con el IAzar
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0)); 
-            
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+
             int resultado = miBolillero.SacarBolilla();
-            
-            Assert.Equal(0, resultado); 
+
+            Assert.Equal(0, resultado);
+            Assert.Equal(9, miBolillero.CantidadDentro());
+            Assert.Equal(1, miBolillero.CantidadFuera());
         }
 
         [Fact]
-        public void Prueba_Jugada_Ganadora()
+        public void ReingresarBolillas_DespuesDeSacarUna_VuelveA10()
         {
-            // Arrange: Bolillero que siempre saca la posición 0.
-            // Si las bolillas son 0, 1, 2... siempre sacará el 0.
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0)); 
-            
-            // Si apostamos al 0, deberíamos ganar.
-            List<int> jugada = new List<int> { 0 }; 
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
 
-            // Act
+            miBolillero.SacarBolilla();
+            miBolillero.ReingresarBolillas();
+
+            Assert.Equal(10, miBolillero.CantidadDentro());
+            Assert.Equal(0, miBolillero.CantidadFuera());
+        }
+
+        [Fact]
+        public void Jugar_JugadaGanadora_0123_Gana()
+        {
+            // AzarFijo(0) siempre saca el índice 0: con el bolillero ordenado [0,1,2,3...] saca 0, luego 1, luego 2, luego 3
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+            List<int> jugada = new List<int> { 0, 1, 2, 3 };
+
             bool gano = miBolillero.Jugar(jugada);
 
-            // Assert
             Assert.True(gano);
         }
 
         [Fact]
-        public void Prueba_Jugada_Perdedora()
+        public void Jugar_JugadaPerdedora_421_Pierde()
         {
-            // Arrange
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0)); 
-            
-            // Si siempre sale el 0, y apostamos al 5, deberíamos perder.
-            List<int> jugada = new List<int> { 5 }; 
+            // AzarFijo(0) saca siempre el primero de la lista ordenada: 0, 1, 2...
+            // La jugada empieza por 4, nunca va a matchear con 0
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+            List<int> jugada = new List<int> { 4, 2, 1 };
 
-            // Act
             bool gano = miBolillero.Jugar(jugada);
 
-            // Assert       
             Assert.False(gano);
         }
 
         [Fact]
-        public void Prueba_VolverAColocarBolillas()
+        public void JugarNVeces_Jugada01_1Vez_Gana1Vez()
         {
-            // Arrange
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0)); 
-            
-            // Act: Sacamos una bolilla y luego las volvems a colocar
-            miBolillero.SacarBolilla();
-            miBolillero.ReiniciarBolillero();
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+            List<int> jugada = new List<int> { 0, 1 };
 
-            // Assert: Al volver a jugar, el bolillero debería estar lleno de nuevo.
-            int bolilla = miBolillero.SacarBolilla();
-            Assert.Equal(0, bolilla);
+            int aciertos = miBolillero.JugarNVeces(jugada, 1);
+
+            Assert.Equal(1, aciertos);
+        }
+
+        // ─── TP2: Tests de Simulacion ───────────────────────────────────────────────
+
+        [Fact]
+        public void SimularSinHilos_JugadaSegura_DevuelveNAciertos()
+        {
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+            Simulacion sim = new Simulacion(miBolillero);
+            List<int> jugada = new List<int> { 0, 1, 2 };
+
+            long aciertos = sim.SimularSinHilos(jugada, 100);
+
+            Assert.Equal(100, aciertos);
         }
 
         [Fact]
-        public void Prueba_JugarNVeces_Bolillero()
+        public void SimularConHilos_JugadaSegura_DevuelveNAciertos()
         {
-            // Arrange
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0)); 
-            List<int> jugada = new List<int> { 0 }; // Jugada ganadora segura
-            
-            // Act: Jugamos 5 veces
-            long aciertos = miBolillero.JugarNVeces(jugada, 5);
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+            Simulacion sim = new Simulacion(miBolillero);
+            List<int> jugada = new List<int> { 0, 1, 2 };
 
-            // Assert: Deberíamos haber acertado las 5 veces, nota. Con el sort en el bolillero.cs, volveria a la posicion original
-            Assert.Equal(5, aciertos);
+            long aciertos = sim.SimularConHilos(jugada, 100, 4);
+
+            Assert.Equal(100, aciertos);
+        }
+
+        [Fact]
+        public void Clone_BolilleroClonado_EsIndependienteDelOriginal()
+        {
+            Bolillero original = new Bolillero(10, new AzarFijo(0));
+            Bolillero clon = (Bolillero)original.Clone();
+
+            // Sacar bolillas del clon no debe afectar al original
+            clon.SacarBolilla();
+
+            Assert.Equal(10, original.CantidadDentro());
+            Assert.Equal(9, clon.CantidadDentro());
         }
     }
 }
