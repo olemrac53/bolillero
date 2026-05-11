@@ -5,15 +5,20 @@ using Biblioteca;
 
 namespace Sim
 {
-    public class Simulacion(Biblioteca.Bolillero bolillero)
+    public class Simulacion
     {
-        private Biblioteca.Bolillero bolillero = bolillero;
+        private Biblioteca.Bolillero bolillero;
 
-        // 1. PRIMER MÉTODO
-        public int JugarNVeces(List<int> jugada, int n)
+        public Simulacion(Biblioteca.Bolillero bolillero)
         {
-            int aciertos = 0;
-            for (int i = 0; i < n; i++)
+            this.bolillero = bolillero;
+        }
+
+        // Método esperado por el test SimularSinHilos_JugadaSegura_DevuelveNAciertos
+        public long SimularSinHilos(List<int> jugada, long cantidadVeces)
+        {
+            long aciertos = 0;
+            for (long i = 0; i < cantidadVeces; i++)
             {
                 if (bolillero.Jugar(jugada))
                     aciertos++;
@@ -21,58 +26,30 @@ namespace Sim
             return aciertos;
         }
 
-        // 2. SEGUNDO MÉTODO
-        public async Task<int> SimularParallelAsync(List<int> jugada, int cantidadVeces)
+        // Método esperado por el test SimularConHilos_JugadaSegura_DevuelveNAciertos
+        // Nota: Toma "hilos" como tercer parámetro y no es Async en la firma de tus tests
+        public long SimularConHilos(List<int> jugada, long cantidadVeces, int cantidadHilos)
         {
-            int aciertos = 0;
+            long aciertos = 0;
             object lockObj = new object();
-            int totalBolillas = bolillero.CantidadDentro() + bolillero.CantidadFuera();
 
-            await Task.Run(() =>
-            {
-                Parallel.For(0, cantidadVeces, i =>
-                {
-                    // SOLUCIÓN: Pasamos new AzarRandom() directamente como segundo parámetro del constructor
-                    var bolilleroLocal = new Biblioteca.Bolillero(totalBolillas, new AzarRandom()); 
-
-                    if (bolilleroLocal.Jugar(jugada))
-                    {
-                        lock (lockObj)
-                        {
-                            aciertos++;
-                        }
-                    }
-                });
-            });
-
-            return aciertos;
-        }
-
-        // 3. TERCER MÉTODO
-        public async Task<int> SimularConHilosAsync(List<int> jugada, int cantidadVeces)
-        {
-            int aciertos = 0;
-            object lockObj = new object();
-            int totalBolillas = bolillero.CantidadDentro() + bolillero.CantidadFuera();
-
-            int cantidadHilos = Environment.ProcessorCount;
-            int iteracionesPorHilo = cantidadVeces / cantidadHilos;
-            int iteracionesSobrantes = cantidadVeces % cantidadHilos;
+            long iteracionesPorHilo = cantidadVeces / cantidadHilos;
+            long iteracionesSobrantes = cantidadVeces % cantidadHilos;
 
             var tareas = new List<Task>();
 
             for (int i = 0; i < cantidadHilos; i++)
             {
-                int iteraciones = iteracionesPorHilo + (i == 0 ? iteracionesSobrantes : 0);
+                long iteraciones = iteracionesPorHilo + (i == 0 ? iteracionesSobrantes : 0);
                 
+                // Usamos el Clone() para que cada hilo trabaje con su propio bolillero en memoria sin pisarse
+                var bolilleroLocal = (Biblioteca.Bolillero)bolillero.Clone();
+
                 tareas.Add(Task.Run(() =>
                 {
-                    int aciertosLocales = 0;
+                    long aciertosLocales = 0;
                     
-                    // SOLUCIÓN: Pasamos new AzarRandom() directamente como segundo parámetro del constructor
-                    var bolilleroLocal = new Biblioteca.Bolillero(totalBolillas, new AzarRandom());
-
-                    for (int j = 0; j < iteraciones; j++)
+                    for (long j = 0; j < iteraciones; j++)
                     {
                         if (bolilleroLocal.Jugar(jugada))
                         {
@@ -87,7 +64,7 @@ namespace Sim
                 }));
             }
 
-            await Task.WhenAll(tareas);
+            Task.WaitAll(tareas.ToArray());
             
             return aciertos;
         }

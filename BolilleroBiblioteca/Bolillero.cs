@@ -1,80 +1,81 @@
-namespace Biblioteca;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
-public class Bolillero : ICloneable
+namespace Biblioteca
 {
-    public int Cantidad { get; private set; }
-    private List<int> _bolillas;
-    private List<int> _bolillasFuera;
-    private IAzar _azar;
-
-    public Bolillero(int cantidad, IAzar azar)
+    // Agregamos ICloneable a la firma de la clase
+    public class Bolillero : ICloneable
     {
-        Cantidad = cantidad;
-        _azar = azar;
-        ReiniciarBolillero();
-    }
+        private List<int> bolillasDentro;
+        private List<int> bolillasFuera;
+        private IAzar azar;
 
-    public int SacarBolilla()
-    {
-        int index = _azar.ObtenerIndice(_bolillas.Count);
-        int valor = _bolillas[index];
-
-        _bolillas.RemoveAt(index);
-        _bolillasFuera.Add(valor);
-
-        return valor;
-    }
-
-    public void ReiniciarBolillero()
-    {
-        _bolillas = new List<int>();
-        _bolillasFuera = new List<int>();
-
-        for (int i = 0; i < Cantidad; i++)
+        // Constructor principal que pide el test
+        public Bolillero(int cantidadBolillas, IAzar azar)
         {
-            _bolillas.Add(i);
+            this.bolillasDentro = Enumerable.Range(0, cantidadBolillas).ToList();
+            this.bolillasFuera = new List<int>();
+            this.azar = azar;
         }
-    }
 
-    public void ReingresarBolillas()
-    {
-        _bolillas.AddRange(_bolillasFuera);
-        _bolillasFuera.Clear();
-        _bolillas.Sort();
-    }
-
-    public bool Jugar(List<int> jugada)
-    {
-        ReingresarBolillas();
-        foreach (var numero in jugada)
+        // Constructor privado utilizado internamente para clonar de forma segura
+        private Bolillero(List<int> bolillasDentro, List<int> bolillasFuera, IAzar azar)
         {
-            if (SacarBolilla() != numero)
-                return false;
+            // Creamos nuevas instancias de listas para que sean completamente independientes del original
+            this.bolillasDentro = new List<int>(bolillasDentro);
+            this.bolillasFuera = new List<int>(bolillasFuera);
+            this.azar = azar;
         }
-        return true;
-    }
 
-    public int JugarNVeces(List<int> jugada, int cantidad)
-    {
-        int aciertos = 0;
-        for (int i = 0; i < cantidad; i++)
+        public int SacarBolilla()
         {
-            if (Jugar(jugada)) aciertos++;
+            int indice = azar.ObtenerIndice(bolillasDentro.Count);
+            int bolilla = bolillasDentro[indice];
+            
+            bolillasDentro.RemoveAt(indice);
+            bolillasFuera.Add(bolilla);
+            
+            return bolilla;
         }
-        return aciertos;
-    }
 
-    public int CantidadDentro() => _bolillas.Count;
+        public void ReingresarBolillas()
+        {
+            bolillasDentro.AddRange(bolillasFuera);
+            bolillasFuera.Clear();
+        }
 
-    public int CantidadFuera() => _bolillasFuera.Count;
+        public int CantidadDentro() => bolillasDentro.Count;
+        
+        public int CantidadFuera() => bolillasFuera.Count;
 
-    // ICloneable: devuelve una copia independiente del bolillero con su propio estado
-    public object Clone()
-    {
-        var clon = new Bolillero(Cantidad, _azar);
-        clon._bolillas = new List<int>(_bolillas);
-        clon._bolillasFuera = new List<int>(_bolillasFuera);
-        return clon;
+        public bool Jugar(List<int> jugada)
+        {
+            foreach (var numero in jugada)
+            {
+                if (SacarBolilla() != numero)
+                    return false;
+            }
+            return true;
+        }
+
+        public int JugarNVeces(List<int> jugada, int cantidad)
+        {
+            int victorias = 0;
+            for (int i = 0; i < cantidad; i++)
+            {
+                ReingresarBolillas();
+                if (Jugar(jugada))
+                {
+                    victorias++;
+                }
+            }
+            return victorias;
+        }
+
+        public object Clone()
+        {
+            return new Bolillero(this.bolillasDentro, this.bolillasFuera, this.azar);
+        }
     }
 }

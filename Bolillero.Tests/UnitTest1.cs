@@ -1,4 +1,5 @@
 ﻿using Biblioteca;
+using Sim;
 using System.Collections.Generic;
 using Xunit;
 
@@ -35,7 +36,6 @@ namespace TestBolilleros
         [Fact]
         public void Jugar_JugadaGanadora_0123_Gana()
         {
-            // AzarFijo(0) siempre saca el índice 0: con el bolillero ordenado [0,1,2,3...] saca 0, luego 1, luego 2, luego 3
             Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
             List<int> jugada = new List<int> { 0, 1, 2, 3 };
 
@@ -47,8 +47,7 @@ namespace TestBolilleros
         [Fact]
         public void Jugar_JugadaPerdedora_421_Pierde()
         {
-            // AzarFijo(0) saca siempre el primero de la lista ordenada: 0, 1, 2...
-            // La jugada empieza por 4, nunca va a matchear con 0
+
             Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
             List<int> jugada = new List<int> { 4, 2, 1 };
 
@@ -81,7 +80,7 @@ namespace TestBolilleros
 
             Assert.Equal(100, aciertos);
         }
-
+        
         [Fact]
         public void SimularConHilos_JugadaSegura_DevuelveNAciertos()
         {
