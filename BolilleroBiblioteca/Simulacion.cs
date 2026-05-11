@@ -1,72 +1,92 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Biblioteca;
+namespace Biblioteca;
 
-namespace Sim
+public class Simulacion
 {
-    public class Simulacion
+    private Bolillero _bolillero;
+
+    public Simulacion(Bolillero bolillero) => _bolillero = bolillero;
+
+    // Simula jugando n veces de forma secuencial, sin hilos
+    public long SimularSinHilos(List<int> jugada, int cantidadVeces)
     {
-        private Biblioteca.Bolillero bolillero;
-
-        public Simulacion(Biblioteca.Bolillero bolillero)
+        long aciertos = 0;
+        for (int i = 0; i < cantidadVeces; i++)
         {
-            this.bolillero = bolillero;
+            // Cada iteración trabaja con un clon independiente para no contaminar el estado
+            var clon = (Bolillero)_bolillero.Clone();
+            if (clon.Jugar(jugada))
+                aciertos++;
         }
+        return aciertos;
+    }
 
-        // Método esperado por el test SimularSinHilos_JugadaSegura_DevuelveNAciertos
-        public long SimularSinHilos(List<int> jugada, long cantidadVeces)
+    // Simula jugando n veces con hilos asíncronos
+    public async Task<long> SimularConHilosAsync(List<int> jugada, int cantidadVeces, int cantidadHilos)
+    {
+        int jugadasPorHilo = cantidadVeces / cantidadHilos;
+        int resto = cantidadVeces % cantidadHilos;
+
+        var tareas = new Task<long>[cantidadHilos];
+
+        for (int i = 0; i < cantidadHilos; i++)
         {
-            long aciertos = 0;
-            for (long i = 0; i < cantidadVeces; i++)
+            int jugadasDeEsteHilo = jugadasPorHilo + (i == cantidadHilos - 1 ? resto : 0);
+
+            tareas[i] = Task.Run(() =>
             {
-                if (bolillero.Jugar(jugada))
-                    aciertos++;
-            }
-            return aciertos;
-        }
-
-        // Método esperado por el test SimularConHilos_JugadaSegura_DevuelveNAciertos
-        // Nota: Toma "hilos" como tercer parámetro y no es Async en la firma de tus tests
-        public long SimularConHilos(List<int> jugada, long cantidadVeces, int cantidadHilos)
-        {
-            long aciertos = 0;
-            object lockObj = new object();
-
-            long iteracionesPorHilo = cantidadVeces / cantidadHilos;
-            long iteracionesSobrantes = cantidadVeces % cantidadHilos;
-
-            var tareas = new List<Task>();
-
-            for (int i = 0; i < cantidadHilos; i++)
-            {
-                long iteraciones = iteracionesPorHilo + (i == 0 ? iteracionesSobrantes : 0);
-                
-                // Usamos el Clone() para que cada hilo trabaje con su propio bolillero en memoria sin pisarse
-                var bolilleroLocal = (Biblioteca.Bolillero)bolillero.Clone();
-
-                tareas.Add(Task.Run(() =>
+                long aciertosLocales = 0;
+                for (int j = 0; j < jugadasDeEsteHilo; j++)
                 {
-                    long aciertosLocales = 0;
-                    
-                    for (long j = 0; j < iteraciones; j++)
-                    {
-                        if (bolilleroLocal.Jugar(jugada))
-                        {
-                            aciertosLocales++;
-                        }
-                    }
-
-                    lock (lockObj)
-                    {
-                        aciertos += aciertosLocales;
-                    }
-                }));
-            }
-
-            Task.WaitAll(tareas.ToArray());
-            
-            return aciertos;
+                    // Cada hilo trabaja con su propio clon, sin concurrencia sobre el bolillero
+                    var clon = (Bolillero)_bolillero.Clone();
+                    if (clon.Jugar(jugada))
+                        aciertosLocales++;
+                }
+                return aciertosLocales;
+            });
         }
+
+        // Await all tasks asíncronamente y suma los resultados
+        long[] resultados = await Task.WhenAll(tareas);
+
+        return resultados.Sum();
+    }
+
+    // Simula jugando n veces repartiendo el trabajo en varios hilos
+    public long SimularConHilos(List<int> jugada, int cantidadVeces, int cantidadHilos)
+    {
+        // Dividimos la carga entre los hilos disponibles
+        int jugadasPorHilo = cantidadVeces / cantidadHilos;
+        int resto = cantidadVeces % cantidadHilos;
+
+        var tareas = new Task<long>[cantidadHilos];
+
+        for (int i = 0; i < cantidadHilos; i++)
+        {
+            // El último hilo absorbe el resto si la división no es exacta
+            int jugadasDeEsteHilo = jugadasPorHilo + (i == cantidadHilos - 1 ? resto : 0);
+
+            tareas[i] = Task.Run(() =>
+            {
+                long aciertosLocales = 0;
+                for (int j = 0; j < jugadasDeEsteHilo; j++)
+                {
+                    // Cada hilo trabaja con su propio clon, sin concurrencia sobre el bolillero
+                    var clon = (Bolillero)_bolillero.Clone();
+                    if (clon.Jugar(jugada))
+                        aciertosLocales++;
+                }
+                return aciertosLocales;
+            });
+        }
+
+        // Esperamos que todos los hilos terminen y sumamos los resultados
+        Task.WaitAll(tareas);
+
+        long totalAciertos = 0;
+        foreach (var tarea in tareas)
+            totalAciertos += tarea.Result;
+
+        return totalAciertos;
     }
 }
