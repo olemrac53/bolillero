@@ -1,5 +1,4 @@
 ﻿using Biblioteca;
-using Sim;
 using System.Collections.Generic;
 using Xunit;
 
@@ -47,7 +46,6 @@ namespace TestBolilleros
         [Fact]
         public void Jugar_JugadaPerdedora_421_Pierde()
         {
-
             Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
             List<int> jugada = new List<int> { 4, 2, 1 };
 
@@ -80,7 +78,7 @@ namespace TestBolilleros
 
             Assert.Equal(100, aciertos);
         }
-        
+
         [Fact]
         public void SimularConHilos_JugadaSegura_DevuelveNAciertos()
         {
@@ -99,11 +97,65 @@ namespace TestBolilleros
             Bolillero original = new Bolillero(10, new AzarFijo(0));
             Bolillero clon = (Bolillero)original.Clone();
 
-            // Sacar bolillas del clon no debe afectar al original
             clon.SacarBolilla();
 
             Assert.Equal(10, original.CantidadDentro());
             Assert.Equal(9, clon.CantidadDentro());
+        }
+
+        // ─── TP3: Test de SimularConHilosAsync ─────────────────────────────────────
+
+        [Fact]
+        public async Task SimularConHilosAsync_JugadaSegura_DevuelveNAciertos()
+        {
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+            Simulacion sim = new Simulacion(miBolillero);
+            List<int> jugada = new List<int> { 0, 1, 2 };
+
+            long aciertos = await sim.SimularConHilosAsync(jugada, 100, 4);
+
+            Assert.Equal(100, aciertos);
+        }
+
+        // ─── TP4: Tests de SimularParallelAsync ────────────────────────────────────
+
+        // Verifica que Parallel.For acumula correctamente los aciertos cuando la jugada siempre gana.
+        [Fact]
+        public async Task SimularParallelAsync_JugadaSegura_DevuelveNAciertos()
+        {
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+            Simulacion sim = new Simulacion(miBolillero);
+            List<int> jugada = new List<int> { 0, 1, 2 };
+
+            long aciertos = await sim.SimularParallelAsync(jugada, 100);
+
+            Assert.Equal(100, aciertos);
+        }
+
+        // Verifica que el método devuelve 0 cuando la jugada nunca puede ganar.
+        [Fact]
+        public async Task SimularParallelAsync_JugadaPerdedora_DevuelveCeroAciertos()
+        {
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+            Simulacion sim = new Simulacion(miBolillero);
+            List<int> jugada = new List<int> { 9, 8, 7 };
+
+            long aciertos = await sim.SimularParallelAsync(jugada, 50);
+
+            Assert.Equal(0, aciertos);
+        }
+
+        // Verifica el caso borde de una sola jugada ganadora.
+        [Fact]
+        public async Task SimularParallelAsync_UnaJugadaGanadora_DevuelveUno()
+        {
+            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+            Simulacion sim = new Simulacion(miBolillero);
+            List<int> jugada = new List<int> { 0, 1 };
+
+            long aciertos = await sim.SimularParallelAsync(jugada, 1);
+
+            Assert.Equal(1, aciertos);
         }
     }
 }
