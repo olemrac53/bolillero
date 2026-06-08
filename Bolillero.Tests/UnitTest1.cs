@@ -1,161 +1,147 @@
 ﻿using Biblioteca;
-using System.Collections.Generic;
-using Xunit;
 
-namespace TestBolilleros
+namespace TestBolilleros;
+
+public class UnitTest1
 {
-    public class UnitTest1
+    Bolillero _bolillero;
+    Simulacion _simulacion;
+    public UnitTest1()
     {
-        // ─── TP1: Tests del Bolillero ───────────────────────────────────────────────
+        _bolillero = new Bolillero(10, new AzarFijo(0));
+        _simulacion = new Simulacion(_bolillero);
+    }
 
-        [Fact]
-        public void SacarBolilla_DevuelveBolillaCero_YActualizaCantidades()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+    // ─── TP1: Tests del Bolillero ───────────────────────────────────────────────
 
-            int resultado = miBolillero.SacarBolilla();
+    [Fact]
+    public void SacarBolilla_DevuelveBolillaCero_YActualizaCantidades()
+    {
+        int resultado = _bolillero.SacarBolilla();
 
-            Assert.Equal(0, resultado);
-            Assert.Equal(9, miBolillero.CantidadDentro());
-            Assert.Equal(1, miBolillero.CantidadFuera());
-        }
+        Assert.Equal(0, resultado);
+        Assert.Equal(9, _bolillero.CantidadDentro());
+        Assert.Equal(1, _bolillero.CantidadFuera());
+    }
 
-        [Fact]
-        public void ReingresarBolillas_DespuesDeSacarUna_VuelveA10()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
+    [Fact]
+    public void ReingresarBolillas_DespuesDeSacarUna_VuelveA10()
+    {
+        _bolillero.SacarBolilla();
+        _bolillero.ReingresarBolillas();
 
-            miBolillero.SacarBolilla();
-            miBolillero.ReingresarBolillas();
+        Assert.Equal(10, _bolillero.CantidadDentro());
+        Assert.Equal(0, _bolillero.CantidadFuera());
+    }
 
-            Assert.Equal(10, miBolillero.CantidadDentro());
-            Assert.Equal(0, miBolillero.CantidadFuera());
-        }
+    [Fact]
+    public void Jugar_JugadaGanadora_0123_Gana()
+    {
+        List<int> jugada = new List<int> { 0, 1, 2, 3 };
 
-        [Fact]
-        public void Jugar_JugadaGanadora_0123_Gana()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
-            List<int> jugada = new List<int> { 0, 1, 2, 3 };
+        bool gano = _bolillero.Jugar(jugada);
 
-            bool gano = miBolillero.Jugar(jugada);
+        Assert.True(gano);
+    }
 
-            Assert.True(gano);
-        }
+    [Fact]
+    public void Jugar_JugadaPerdedora_421_Pierde()
+    {
+        List<int> jugada = new List<int> { 4, 2, 1 };
 
-        [Fact]
-        public void Jugar_JugadaPerdedora_421_Pierde()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
-            List<int> jugada = new List<int> { 4, 2, 1 };
+        bool gano = _bolillero.Jugar(jugada);
 
-            bool gano = miBolillero.Jugar(jugada);
+        Assert.False(gano);
+    }
 
-            Assert.False(gano);
-        }
+    [Fact]
+    public void JugarNVeces_Jugada01_1Vez_Gana1Vez()
+    {
+        List<int> jugada = new List<int> { 0, 1 };
 
-        [Fact]
-        public void JugarNVeces_Jugada01_1Vez_Gana1Vez()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
-            List<int> jugada = new List<int> { 0, 1 };
+        int aciertos = _bolillero.JugarNVeces(jugada, 1);
 
-            int aciertos = miBolillero.JugarNVeces(jugada, 1);
+        Assert.Equal(1, aciertos);
+    }
 
-            Assert.Equal(1, aciertos);
-        }
+    // ─── TP2: Tests de Simulacion ───────────────────────────────────────────────
 
-        // ─── TP2: Tests de Simulacion ───────────────────────────────────────────────
+    [Fact]
+    public void SimularSinHilos_JugadaSegura_DevuelveNAciertos()
+    {
+        List<int> jugada = new List<int> { 0, 1, 2 };
 
-        [Fact]
-        public void SimularSinHilos_JugadaSegura_DevuelveNAciertos()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
-            Simulacion sim = new Simulacion(miBolillero);
-            List<int> jugada = new List<int> { 0, 1, 2 };
+        long aciertos = _simulacion.SimularSinHilos(jugada, 100);
 
-            long aciertos = sim.SimularSinHilos(jugada, 100);
+        Assert.Equal(100, aciertos);
+    }
 
-            Assert.Equal(100, aciertos);
-        }
+    [Fact]
+    public void SimularConHilos_JugadaSegura_DevuelveNAciertos()
+    {
+        List<int> jugada = new List<int> { 0, 1, 2 };
 
-        [Fact]
-        public void SimularConHilos_JugadaSegura_DevuelveNAciertos()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
-            Simulacion sim = new Simulacion(miBolillero);
-            List<int> jugada = new List<int> { 0, 1, 2 };
+        long aciertos = _simulacion.SimularConHilos(jugada, 100, 4);
 
-            long aciertos = sim.SimularConHilos(jugada, 100, 4);
+        Assert.Equal(100, aciertos);
+    }
 
-            Assert.Equal(100, aciertos);
-        }
+    [Fact]
+    public void Clone_BolilleroClonado_EsIndependienteDelOriginal()
+    {
+        Bolillero original = new Bolillero(10, new AzarFijo(0));
+        Bolillero clon = (Bolillero)original.Clone();
 
-        [Fact]
-        public void Clone_BolilleroClonado_EsIndependienteDelOriginal()
-        {
-            Bolillero original = new Bolillero(10, new AzarFijo(0));
-            Bolillero clon = (Bolillero)original.Clone();
+        clon.SacarBolilla();
 
-            clon.SacarBolilla();
+        Assert.Equal(10, original.CantidadDentro());
+        Assert.Equal(9, clon.CantidadDentro());
+    }
 
-            Assert.Equal(10, original.CantidadDentro());
-            Assert.Equal(9, clon.CantidadDentro());
-        }
+    // ─── TP3: Test de SimularConHilosAsync ─────────────────────────────────────
 
-        // ─── TP3: Test de SimularConHilosAsync ─────────────────────────────────────
+    [Fact]
+    public async Task SimularConHilosAsync_JugadaSegura_DevuelveNAciertos()
+    {
+        List<int> jugada = new List<int> { 0, 1, 2 };
 
-        [Fact]
-        public async Task SimularConHilosAsync_JugadaSegura_DevuelveNAciertos()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
-            Simulacion sim = new Simulacion(miBolillero);
-            List<int> jugada = new List<int> { 0, 1, 2 };
+        long aciertos = await _simulacion.SimularConHilosAsync(jugada, 100, 4);
 
-            long aciertos = await sim.SimularConHilosAsync(jugada, 100, 4);
+        Assert.Equal(100, aciertos);
+    }
 
-            Assert.Equal(100, aciertos);
-        }
+    // ─── TP4: Tests de SimularParallelAsync ────────────────────────────────────
 
-        // ─── TP4: Tests de SimularParallelAsync ────────────────────────────────────
+    // Verifica que Parallel.For acumula correctamente los aciertos cuando la jugada siempre gana.
+    [Fact]
+    public async Task SimularParallelAsync_JugadaSegura_DevuelveNAciertos()
+    {
+        List<int> jugada = new List<int> { 0, 1, 2 };
 
-        // Verifica que Parallel.For acumula correctamente los aciertos cuando la jugada siempre gana.
-        [Fact]
-        public async Task SimularParallelAsync_JugadaSegura_DevuelveNAciertos()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
-            Simulacion sim = new Simulacion(miBolillero);
-            List<int> jugada = new List<int> { 0, 1, 2 };
+        long aciertos = await _simulacion.SimularParallelAsync(jugada, 100);
 
-            long aciertos = await sim.SimularParallelAsync(jugada, 100);
+        Assert.Equal(100, aciertos);
+    }
 
-            Assert.Equal(100, aciertos);
-        }
+    // Verifica que el método devuelve 0 cuando la jugada nunca puede ganar.
+    [Fact]
+    public async Task SimularParallelAsync_JugadaPerdedora_DevuelveCeroAciertos()
+    {
+        List<int> jugada = new List<int> { 9, 8, 7 };
 
-        // Verifica que el método devuelve 0 cuando la jugada nunca puede ganar.
-        [Fact]
-        public async Task SimularParallelAsync_JugadaPerdedora_DevuelveCeroAciertos()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
-            Simulacion sim = new Simulacion(miBolillero);
-            List<int> jugada = new List<int> { 9, 8, 7 };
+        long aciertos = await _simulacion.SimularParallelAsync(jugada, 50);
 
-            long aciertos = await sim.SimularParallelAsync(jugada, 50);
+        Assert.Equal(0, aciertos);
+    }
 
-            Assert.Equal(0, aciertos);
-        }
+    // Verifica el caso borde de una sola jugada ganadora.
+    [Fact]
+    public async Task SimularParallelAsync_UnaJugadaGanadora_DevuelveUno()
+    {
+        List<int> jugada = new List<int> { 0, 1 };
 
-        // Verifica el caso borde de una sola jugada ganadora.
-        [Fact]
-        public async Task SimularParallelAsync_UnaJugadaGanadora_DevuelveUno()
-        {
-            Bolillero miBolillero = new Bolillero(10, new AzarFijo(0));
-            Simulacion sim = new Simulacion(miBolillero);
-            List<int> jugada = new List<int> { 0, 1 };
+        long aciertos = await _simulacion.SimularParallelAsync(jugada, 1);
 
-            long aciertos = await sim.SimularParallelAsync(jugada, 1);
-
-            Assert.Equal(1, aciertos);
-        }
+        Assert.Equal(1, aciertos);
     }
 }
